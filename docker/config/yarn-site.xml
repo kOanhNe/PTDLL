@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<configuration>
+    <!-- 1. Cấu hình máy chủ ResourceManager -->
+    <property>
+        <name>yarn.resourcemanager.hostname</name>
+        <value>master</value>
+    </property>
+
+    <!-- 2. Cấu hình dịch vụ Shuffle cho MapReduce -->
+    <property>
+        <name>yarn.nodemanager.aux-services</name>
+        <value>mapreduce_shuffle</value>
+    </property>
+
+    <!-- 3. Classpath: Viết trên 1 dòng duy nhất, không có khoảng trắng -->
+    <property>
+        <name>yarn.application.classpath</name>
+        <value>/opt/hadoop/share/hadoop/common/*,/opt/hadoop/share/hadoop/common/lib/*,/opt/hadoop/share/hadoop/hdfs/*,/opt/hadoop/share/hadoop/hdfs/lib/*,/opt/hadoop/share/hadoop/mapreduce/*,/opt/hadoop/share/hadoop/mapreduce/lib/*,/opt/hadoop/share/hadoop/yarn/*,/opt/hadoop/share/hadoop/yarn/lib/*</value>
+    </property>
+
+    <!-- 4. Tắt kiểm tra bộ nhớ ảo (Rất quan trọng khi chạy Java 17 trên Docker/VM) -->
+    <!-- Giúp ngăn chặn việc NodeManager tự động giết các tiến trình Java do tràn bộ nhớ ảo giả -->
+    <property>
+        <name>yarn.nodemanager.vmem-check-enabled</name>
+        <value>false</value>
+    </property>
+
+    <property>
+        <name>yarn.nodemanager.pmem-check-enabled</name>
+        <value>false</value>
+    </property>
+
+    <!-- 5. Cho phép truyền các tham số Java 17 vào các container -->
+    <property>
+        <name>yarn.nodemanager.admin-command-opts</name>
+        <value>--add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.nio=ALL-UNNAMED</value>
+    </property>
+
+</configuration>

@@ -1,0 +1,49 @@
+<configuration>
+
+  <!-- Bắt MapReduce chạy trên YARN -->
+  <property>
+    <name>mapreduce.framework.name</name>
+    <value>yarn</value>
+  </property>
+
+  <!-- Cho ApplicationMaster biết MapReduce nằm ở đâu -->
+  <property>
+    <name>yarn.app.mapreduce.am.env</name>
+    <value>HADOOP_MAPRED_HOME=/opt/hadoop</value>
+  </property>
+
+  <!-- Env cho mapper -->
+  <property>
+    <name>mapreduce.map.env</name>
+    <value>HADOOP_MAPRED_HOME=/opt/hadoop</value>
+  </property>
+
+  <!-- Env cho reducer -->
+  <property>
+    <name>mapreduce.reduce.env</name>
+    <value>HADOOP_MAPRED_HOME=/opt/hadoop</value>
+  </property>
+
+  <property>
+  <name>mapreduce.application.classpath</name>
+  <value>/opt/hadoop/share/hadoop/mapreduce/*,/opt/hadoop/share/hadoop/mapreduce/lib/*,/opt/hadoop/share/hadoop/common/*,/opt/hadoop/share/hadoop/common/lib/*,/opt/hadoop/share/hadoop/yarn/*,/opt/hadoop/share/hadoop/yarn/lib/*,/opt/hadoop/share/hadoop/hdfs/*,/opt/hadoop/share/hadoop/hdfs/lib/*</value>
+  </property>
+  <!-- Cấp quyền cho Map Task -->
+<property>
+  <name>mapreduce.map.java.opts</name>
+  <value>-Xmx512m --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.nio=ALL-UNNAMED</value>
+</property>
+
+<!-- Cấp quyền cho Reduce Task -->
+<property>
+  <name>mapreduce.reduce.java.opts</name>
+  <value>-Xmx512m --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.nio=ALL-UNNAMED</value>
+</property>
+
+<!-- Cấp quyền cho ApplicationMaster (AM) -->
+<property>
+  <name>yarn.app.mapreduce.am.command-opts</name>
+  <value>-Xmx512m --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.nio=ALL-UNNAMED</value>
+</property>
+
+</configuration>

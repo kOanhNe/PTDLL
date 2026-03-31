@@ -1,0 +1,50 @@
+version: "3"
+services:
+  master:
+    image: hadoopkieuoanh
+    container_name: master
+    hostname: master
+    ports:
+      - "9870:9870"   # HDFS UI
+      - "8089:8088"   # YARN UI
+      - "10001:10001" # Spark Thrift Server
+    volumes:
+      - D:\\PTDLL\\data:/data:ro
+      - D:\\PTDLL\\src:/app/src:rw
+    networks:
+      - hadoop_net
+
+  slave1:
+    image: hadoopkieuoanh
+    container_name: slave1
+    hostname: slave1
+    networks:
+      - hadoop_net
+
+  slave2:
+    image: hadoopkieuoanh
+    container_name: slave2
+    hostname: slave2
+    networks:
+      - hadoop_net
+
+  # PHẢI NẰM TRONG MỤC SERVICES
+  superset:
+    image: apache/superset:latest
+    container_name: superset
+    user: "root"
+    ports:
+      - "8080:8088" # Truy cập Superset tại localhost:8080
+    networks:
+      - hadoop_net
+    environment:
+      - SUPERSET_SECRET_KEY=althea_lakehouse_2026
+    entrypoint: >
+      sh -c "
+        pip install pyhive thrift thrift-sasl &&
+        /usr/bin/run-server.sh
+      "
+
+networks:
+  hadoop_net:
+    driver: bridge
