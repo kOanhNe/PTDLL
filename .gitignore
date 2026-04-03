@@ -14,3 +14,22 @@ spark-warehouse/
 
 # Data outputs in local tests
 lakehouse/
+
+# ignore everything
+*
+
+# allow src
+!src/
+!src/**
+
+# macOS
+.DS_Store
+
+# big files
+*.tar.gz
+*.tgz
+
+# spark/hadoop stuff
+spark-*
+hadoop-*
+apache-hive-*
