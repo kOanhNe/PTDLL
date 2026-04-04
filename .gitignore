@@ -21,8 +21,13 @@ lakehouse/
 # allow important files/folders
 !.gitignore
 !docker-compose.yml
+!docker-compose-with-airflow.yml
 !src/
 !src/**
+!dashboards/
+!dashboards/**
+!AIRFLOW_SUPERSET_SETUP.md
+!README.md
 
 # macOS
 .DS_Store
