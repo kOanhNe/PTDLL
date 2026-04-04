@@ -15,6 +15,8 @@ spark-warehouse/
 # Data outputs in local tests
 lakehouse/
 
+!docker-compose.yml
+
 # ignore everything
 *
 
