@@ -9,8 +9,8 @@ services:
       - "8089:8088"   # YARN UI
       - "10001:10001" # Spark Thrift Server
     volumes:
-      - D:\\PTDLL\\data:/data:ro
-      - D:\\PTDLL\\src:/app/src:rw
+      - ./data:/data:ro
+      - ./src:/app/src:rw
     networks:
       - hadoop_net
 
