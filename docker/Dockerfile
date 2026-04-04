@@ -15,9 +15,12 @@ RUN apt-get update && apt-get install -y \
 ENV JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
 ENV PATH=$PATH:$JAVA_HOME/bin
 
-# 2. Cài đặt Hadoop 3.3.6 (Dùng ADD để tự giải nén tiết kiệm chỗ)
-ADD hadoop-3.3.6.tar.gz /opt/
-RUN mv /opt/hadoop-3.3.6 /opt/hadoop
+# 2. Cài đặt Hadoop 3.3.6
+RUN cd /opt && \
+    wget -q https://archive.apache.org/dist/hadoop/common/hadoop-3.3.6/hadoop-3.3.6.tar.gz && \
+    tar -xzf hadoop-3.3.6.tar.gz && \
+    rm hadoop-3.3.6.tar.gz && \
+    mv /opt/hadoop-3.3.6 /opt/hadoop
 ENV HADOOP_HOME=/opt/hadoop
 ENV HADOOP_CONF_DIR=$HADOOP_HOME/etc/hadoop
 ENV PATH=$PATH:$HADOOP_HOME/bin:$HADOOP_HOME/sbin
@@ -25,14 +28,20 @@ ENV PATH=$PATH:$HADOOP_HOME/bin:$HADOOP_HOME/sbin
 # --- BỎ PHẦN PIG TẠI ĐÂY ---
 
 # 3. Cài đặt Hive 4.2.0
-ADD apache-hive-4.2.0-bin.tar.gz /opt/
-RUN mv /opt/apache-hive-4.2.0-bin /opt/hive
+RUN cd /opt && \
+    wget -q https://archive.apache.org/dist/hive/hive-4.2.0/apache-hive-4.2.0-bin.tar.gz && \
+    tar -xzf apache-hive-4.2.0-bin.tar.gz && \
+    rm apache-hive-4.2.0-bin.tar.gz && \
+    mv /opt/apache-hive-4.2.0-bin /opt/hive
 ENV HIVE_HOME=/opt/hive
 ENV PATH=$PATH:$HIVE_HOME/bin
 
 # 4. Cài đặt Spark 4.1.1
-ADD spark-4.1.1-bin-hadoop3.tgz /opt/
-RUN mv /opt/spark-4.1.1-bin-hadoop3 /opt/spark
+RUN cd /opt && \
+    wget -q https://archive.apache.org/dist/spark/spark-4.1.1/spark-4.1.1-bin-hadoop3.tgz && \
+    tar -xzf spark-4.1.1-bin-hadoop3.tgz && \
+    rm spark-4.1.1-bin-hadoop3.tgz && \
+    mv /opt/spark-4.1.1-bin-hadoop3 /opt/spark
 ENV SPARK_HOME=/opt/spark
 ENV PATH=$PATH:$SPARK_HOME/bin:$SPARK_HOME/sbin
 
