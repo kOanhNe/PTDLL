@@ -17,7 +17,7 @@ ENV PATH=$PATH:$JAVA_HOME/bin
 
 # 2. Cài đặt Hadoop 3.3.6
 RUN cd /opt && \
-    wget -q https://archive.apache.org/dist/hadoop/common/hadoop-3.3.6/hadoop-3.3.6.tar.gz && \
+    wget --timeout=120 --tries=3 -O hadoop-3.3.6.tar.gz https://dlcdn.apache.org/hadoop/common/hadoop-3.3.6/hadoop-3.3.6.tar.gz && \
     tar -xzf hadoop-3.3.6.tar.gz && \
     rm hadoop-3.3.6.tar.gz && \
     mv /opt/hadoop-3.3.6 /opt/hadoop
@@ -29,7 +29,7 @@ ENV PATH=$PATH:$HADOOP_HOME/bin:$HADOOP_HOME/sbin
 
 # 3. Cài đặt Hive 4.2.0
 RUN cd /opt && \
-    wget -q https://archive.apache.org/dist/hive/hive-4.2.0/apache-hive-4.2.0-bin.tar.gz && \
+    wget --timeout=120 --tries=3 -O apache-hive-4.2.0-bin.tar.gz https://dlcdn.apache.org/hive/hive-4.2.0/apache-hive-4.2.0-bin.tar.gz && \
     tar -xzf apache-hive-4.2.0-bin.tar.gz && \
     rm apache-hive-4.2.0-bin.tar.gz && \
     mv /opt/apache-hive-4.2.0-bin /opt/hive
@@ -38,7 +38,7 @@ ENV PATH=$PATH:$HIVE_HOME/bin
 
 # 4. Cài đặt Spark 4.1.1
 RUN cd /opt && \
-    wget -q https://archive.apache.org/dist/spark/spark-4.1.1/spark-4.1.1-bin-hadoop3.tgz && \
+    wget --timeout=120 --tries=3 -O spark-4.1.1-bin-hadoop3.tgz https://dlcdn.apache.org/spark/spark-4.1.1/spark-4.1.1-bin-hadoop3.tgz && \
     tar -xzf spark-4.1.1-bin-hadoop3.tgz && \
     rm spark-4.1.1-bin-hadoop3.tgz && \
     mv /opt/spark-4.1.1-bin-hadoop3 /opt/spark
