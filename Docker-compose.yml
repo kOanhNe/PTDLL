@@ -1,7 +1,7 @@
 version: "3"
 services:
   master:
-    image: hadooptrang
+    image: hadoopnhom17
     container_name: master
     hostname: master
     ports:
@@ -15,14 +15,14 @@ services:
       - hadoop_net
 
   slave1:
-    image: hadooptrang
+    image: hadoopnhom17
     container_name: slave1
     hostname: slave1
     networks:
       - hadoop_net
 
   slave2:
-    image: hadooptrang
+    image: hadoopnhom17
     container_name: slave2
     hostname: slave2
     networks:
