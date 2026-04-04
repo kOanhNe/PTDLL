@@ -57,9 +57,9 @@ def xu_ly_orders(spark: SparkSession) -> None:
     - Lọc null, xóa trùng
     - Lưu Silver
     """
-    
-    print("\n=== SILVER LAYER - Orders ===")
-    
+
+    print("\nSILVER LAYER - Orders")
+
     # 1. Đọc Bronze
     print("\n[1/5] Đọc bronze_orders...")
     df_bronze = spark.read.parquet(f"{HDFS_BRZ}/bronze_orders")
@@ -136,11 +136,11 @@ def xu_ly_orders(spark: SparkSession) -> None:
     print(f"  Ghi thành công: {HDFS_SLV}/silver_orders/")
     
     # Hiển thị schema
-    print("\n=== Schema silver_orders ===")
+    print("\Schema silver_orders")
     df.printSchema()
     
     # Hiển thị sample data
-    print("\n=== Sample Data ===")
+    print("\nSample Data")
     df.select(
         "order_id",
         "order_status",
@@ -151,7 +151,7 @@ def xu_ly_orders(spark: SparkSession) -> None:
     ).limit(5).show(truncate=False)
     
     # Thống kê
-    print("\n=== Thống kê ===")
+    print("\nThống kê")
     print(f"Tổng orders: {df.count():,}")
     
     delayed_count = df.filter(col("is_delayed") == True).count()
@@ -166,9 +166,9 @@ def main() -> None:
     
     try:
         xu_ly_orders(spark)
-        print("\n✓ Xong! slv_orders")
+        print("\n Xong slv_orders")
     except Exception as e:
-        print(f"\n✗ Lỗi: {e}")
+        print(f"\n Lỗi: {e}")
         raise
     finally:
         spark.stop()
