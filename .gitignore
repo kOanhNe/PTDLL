@@ -15,12 +15,12 @@ spark-warehouse/
 # Data outputs in local tests
 lakehouse/
 
-!docker-compose.yml
-
 # ignore everything
 *
 
-# allow src
+# allow important files/folders
+!.gitignore
+!docker-compose.yml
 !src/
 !src/**
 
