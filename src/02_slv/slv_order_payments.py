@@ -74,7 +74,7 @@ def xu_ly_order_payments(spark: SparkSession) -> None:
     df.write.mode("overwrite").parquet(f"{HDFS_SLV}/silver_order_payments")
     print(f"\nGhi thành công: {HDFS_SLV}/silver_order_payments/")
     
-    print("\n--- THỐNG KÊ ---")
+    print("\nTHỐNG KÊ")
     print(f"Tổng records: {df.count():,}")
     
     print("\nPhương thức thanh toán:")
