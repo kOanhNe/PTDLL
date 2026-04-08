@@ -45,9 +45,7 @@ docker build --no-cache -f docker/Dockerfile -t nhom17 .
 ### Bước 2 - Khởi động cluster
 
 ```bash
-docker compose -f Docker-compose.yml down -v
-docker compose -f Docker-compose.yml up -d
-docker compose -f Docker-compose.yml ps
+docker compose up -d
 ```
 
 ### Bước 3 - Chờ hệ thống sẵn sàng
