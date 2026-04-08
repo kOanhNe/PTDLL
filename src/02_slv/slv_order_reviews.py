@@ -118,13 +118,14 @@ def xu_ly_order_reviews(spark: SparkSession) -> None:
         .drop("row_num")
     )
     
-    (
-        df.write
-        .format("parquet")
-        .mode("overwrite")
-        .option("path", SILVER_TABLE_PATH)
-        .saveAsTable(f"default.{SILVER_TABLE}")
-    )
+    df.write.mode("overwrite").parquet(SILVER_TABLE_PATH)
+
+    spark.sql(f"DROP TABLE IF EXISTS default.{SILVER_TABLE}")
+    spark.sql(f"""
+        CREATE TABLE default.{SILVER_TABLE}
+        USING PARQUET
+        LOCATION '{SILVER_TABLE_PATH}'
+    """)
     print(f"\nGhi thành công: {SILVER_TABLE_PATH}/")
     print(f"Đăng ký bảng Hive: default.{SILVER_TABLE}")
     

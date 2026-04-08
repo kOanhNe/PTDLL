@@ -110,13 +110,14 @@ def xu_ly_sellers(spark: SparkSession) -> None:
     # 5. Ghi Silver
     print("\n[5/5] Ghi vào silver_sellers...")
     
-    (
-        df.write
-        .format("parquet")
-        .mode("overwrite")
-        .option("path", SILVER_TABLE_PATH)
-        .saveAsTable(f"default.{SILVER_TABLE}")
-    )
+    df.write.mode("overwrite").parquet(SILVER_TABLE_PATH)
+
+    spark.sql(f"DROP TABLE IF EXISTS default.{SILVER_TABLE}")
+    spark.sql(f"""
+        CREATE TABLE default.{SILVER_TABLE}
+        USING PARQUET
+        LOCATION '{SILVER_TABLE_PATH}'
+    """)
 
     print(f"  Ghi thành công: {SILVER_TABLE_PATH}/")
     print(f"  Đăng ký bảng Hive: default.{SILVER_TABLE}")

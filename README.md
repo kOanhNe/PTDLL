@@ -48,13 +48,13 @@ docker build --no-cache -f docker/Dockerfile -t nhom17 .
 docker compose up -d
 ```
 
-### Bước 3 - Chờ hệ thống sẵn sàng
+### Bước 3 - Vào Bash
 
-```bash
-docker compose -f Docker-compose.yml logs -f master
-```
+docker exec -it master bash
 
 Khi thấy HDFS/YARN/Spark Thrift đã lên ổn thì sang bước tiếp.
+
+
 
 ### Bước 4 - Tạo thư mục Lakehouse trên HDFS
 
@@ -82,20 +82,20 @@ docker exec -it master spark-submit /app/src/01_brz/brz_ingest_all.py
 ### Bước 7 - Chạy Silver
 
 ```bash
-docker exec -it master spark-submit /app/src/02_slv/slv_orders.py
-docker exec -it master spark-submit /app/src/02_slv/slv_order_items.py
-docker exec -it master spark-submit /app/src/02_slv/slv_customers.py
-docker exec -it master spark-submit /app/src/02_slv/slv_sellers.py
-docker exec -it master spark-submit /app/src/02_slv/slv_order_payments.py
-docker exec -it master spark-submit /app/src/02_slv/slv_order_reviews.py
-docker exec -it master spark-submit /app/src/02_slv/slv_products.py
+spark-submit /app/src/02_slv/slv_orders.py
+spark-submit /app/src/02_slv/slv_order_items.py
+spark-submit /app/src/02_slv/slv_customers.py
+spark-submit /app/src/02_slv/slv_sellers.py
+spark-submit /app/src/02_slv/slv_order_payments.py
+spark-submit /app/src/02_slv/slv_order_reviews.py
+spark-submit /app/src/02_slv/slv_products.py
 ```
 
 ### Bước 8 - Chạy Gold
 
 ```bash
-docker exec -it master spark-submit /app/src/03_gld/gld_sales_report.py
-docker exec -it master spark-submit /app/src/03_gld/gld_delivery_perf.py
+spark-submit /app/src/03_gld/gld_sales_report.py
+spark-submit /app/src/03_gld/gld_delivery_perf.py
 ```
 
 ## 4) Truy cập UI
@@ -114,7 +114,7 @@ Trong Superset, tạo database với SQLAlchemy URI:
 Kiểm tra nhanh bảng đã đăng ký trong Hive Metastore:
 
 ```bash
-docker exec -it master bash -lc "beeline -u 'jdbc:hive2://master:10001/default' -n hive -e 'show tables;'"
+beeline -u 'jdbc:hive2://master:10001/default' -n hive -e 'show tables;'
 ```
 
 Sau đó tạo dataset từ các bảng Gold để vẽ dashboard.
@@ -124,15 +124,7 @@ Sau đó tạo dataset từ các bảng Gold để vẽ dashboard.
 ### `Name node is in safe mode`
 
 ```bash
-docker exec -it master hdfs dfsadmin -safemode leave
-```
-
-### `no configuration file provided: not found`
-
-Dùng đúng file tên chữ hoa:
-
-```bash
-docker compose -f Docker-compose.yml up -d
+hdfs dfsadmin -safemode leave
 ```
 
 ### Build image xong nhưng compose vẫn chạy image cũ

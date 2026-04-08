@@ -8,15 +8,14 @@ spark = SparkSession.builder \
 
 spark.sparkContext.setLogLevel("WARN")
 
-# Đọc trực tiếp từ HDFS
-HDFS = "hdfs://master:9000/lakehouse/slv"
+# Đọc từ Hive Metastore (đồng bộ với Superset)
 HDFS_GLD = "hdfs://master:9000/lakehouse/gld"
 
-orders    = spark.read.parquet(f"{HDFS}/silver_orders")
-items     = spark.read.parquet(f"{HDFS}/silver_order_items")
-products  = spark.read.parquet(f"{HDFS}/silver_products")
-customers = spark.read.parquet(f"{HDFS}/silver_customers")
-payments  = spark.read.parquet(f"{HDFS}/silver_order_payments")
+orders = spark.table("default.silver_orders")
+items = spark.table("default.silver_order_items")
+products = spark.table("default.silver_products")
+customers = spark.table("default.silver_customers")
+payments = spark.table("default.silver_order_payments")
 
 # 1. Doanh thu theo tháng
 monthly_revenue = (
@@ -27,13 +26,14 @@ monthly_revenue = (
          count("order_id").alias("total_orders"))
     .orderBy("month")
 )
-(
-    monthly_revenue.write
-    .format("parquet")
-    .mode("overwrite")
-    .option("path", f"{HDFS_GLD}/gold_monthly_revenue")
-    .saveAsTable("default.gold_monthly_revenue")
-)
+monthly_revenue_path = f"{HDFS_GLD}/gold_monthly_revenue"
+monthly_revenue.write.mode("overwrite").parquet(monthly_revenue_path)
+spark.sql("DROP TABLE IF EXISTS default.gold_monthly_revenue")
+spark.sql(f"""
+    CREATE TABLE default.gold_monthly_revenue
+    USING PARQUET
+    LOCATION '{monthly_revenue_path}'
+""")
 monthly_revenue.show(5)
 print("gold_monthly_revenue done")
 
@@ -46,13 +46,14 @@ top_products = (
     .orderBy(desc("total_orders"))
     .limit(10)
 )
-(
-    top_products.write
-    .format("parquet")
-    .mode("overwrite")
-    .option("path", f"{HDFS_GLD}/gold_top_products")
-    .saveAsTable("default.gold_top_products")
-)
+top_products_path = f"{HDFS_GLD}/gold_top_products"
+top_products.write.mode("overwrite").parquet(top_products_path)
+spark.sql("DROP TABLE IF EXISTS default.gold_top_products")
+spark.sql(f"""
+    CREATE TABLE default.gold_top_products
+    USING PARQUET
+    LOCATION '{top_products_path}'
+""")
 top_products.show()
 print("gold_top_products done")
 
@@ -65,13 +66,14 @@ region_revenue = (
          round(sum("payment_value"), 2).alias("total_revenue"))
     .orderBy(desc("total_revenue"))
 )
-(
-    region_revenue.write
-    .format("parquet")
-    .mode("overwrite")
-    .option("path", f"{HDFS_GLD}/gold_region_revenue")
-    .saveAsTable("default.gold_region_revenue")
-)
+region_revenue_path = f"{HDFS_GLD}/gold_region_revenue"
+region_revenue.write.mode("overwrite").parquet(region_revenue_path)
+spark.sql("DROP TABLE IF EXISTS default.gold_region_revenue")
+spark.sql(f"""
+    CREATE TABLE default.gold_region_revenue
+    USING PARQUET
+    LOCATION '{region_revenue_path}'
+""")
 region_revenue.show()
 print("gold_region_revenue done")
 
@@ -83,13 +85,14 @@ payment_method = (
          round(avg("payment_installments"), 1).alias("avg_installments"))
     .orderBy(desc("total_revenue"))
 )
-(
-    payment_method.write
-    .format("parquet")
-    .mode("overwrite")
-    .option("path", f"{HDFS_GLD}/gold_payment_method")
-    .saveAsTable("default.gold_payment_method")
-)
+payment_method_path = f"{HDFS_GLD}/gold_payment_method"
+payment_method.write.mode("overwrite").parquet(payment_method_path)
+spark.sql("DROP TABLE IF EXISTS default.gold_payment_method")
+spark.sql(f"""
+    CREATE TABLE default.gold_payment_method
+    USING PARQUET
+    LOCATION '{payment_method_path}'
+""")
 payment_method.show()
 print("gold_payment_method done")
 

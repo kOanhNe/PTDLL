@@ -74,13 +74,14 @@ def xu_ly_order_payments(spark: SparkSession) -> None:
     
     df = df.filter(col("order_id").isNotNull() & col("payment_value").isNotNull())
     
-    (
-        df.write
-        .format("parquet")
-        .mode("overwrite")
-        .option("path", SILVER_TABLE_PATH)
-        .saveAsTable(f"default.{SILVER_TABLE}")
-    )
+    df.write.mode("overwrite").parquet(SILVER_TABLE_PATH)
+
+    spark.sql(f"DROP TABLE IF EXISTS default.{SILVER_TABLE}")
+    spark.sql(f"""
+        CREATE TABLE default.{SILVER_TABLE}
+        USING PARQUET
+        LOCATION '{SILVER_TABLE_PATH}'
+    """)
     print(f"\nGhi thành công: {SILVER_TABLE_PATH}/")
     print(f"Đăng ký bảng Hive: default.{SILVER_TABLE}")
     
