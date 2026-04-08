@@ -1,61 +1,135 @@
 # PTDLL - Olist Lakehouse (Bronze / Silver / Gold)
 
-## 1) Cấu trúc chuẩn
+Project ETL Lakehouse chạy trên Hadoop + Spark + Hive + Superset.
 
-PTDLL/
-├── docker/                 # Cấu hình Cluster (Hadoop, Spark, Hive, Superset)
-│   ├── config/             # Các file core-site.xml, hdfs-site.xml...
-│   ├── Dockerfile          # Image chuẩn cho toàn nhóm
-│   └── start.sh            # Script khởi động dịch vụ
-├── data/                   # Chứa 8 file .csv gốc (Lưu ý: Không push lên Git)
-├── src/
-│   ├── 01_brz/             # Tầng BRONZE: Ingestion dữ liệu thô
-│   ├── 02_slv/             # Tầng SILVER: Cleaning & Transformation
-│   └── 03_gld/             # Tầng GOLD: Aggregation & Business Insights
-├── docker-compose.yml      # File điều phối toàn bộ hệ thống
-├── .gitignore              # Chặn push dữ liệu nặng và rác hệ thống
-└── README.md               # Hướng dẫn này
+## 1) Cấu trúc chính
 
-## 2) Chuẩn đường dẫn HDFS dùng chung
-Tất cả script PySpark dùng prefix:
+```text
+hadooptrang/
+├── Docker-compose.yml
+├── README.md
+├── data/
+├── docker/
+│   ├── Dockerfile
+│   ├── start.sh
+│   └── config/
+│       ├── core-site.xml
+│       ├── hdfs-site.xml
+│       ├── hive-site.xml
+│       ├── mapred-site.xml
+│       ├── spark-defaults.conf
+│       ├── workers
+│       └── yarn-site.xml
+└── src/
+    ├── 01_brz/
+    ├── 02_slv/
+    └── 03_gld/
+```
+
+## 2) Chuẩn đường dẫn
+
+Tất cả script dùng chung prefix:
 
 `hdfs://master:9000/lakehouse/`
 
-## 3) Giai đoạn 1 - Setup đồng bộ
-1. Chạy môi trường:
-   - `docker compose up -d`
-2. Đẩy dữ liệu Olist lên HDFS (mỗi máy tự đẩy):
-   - `hdfs dfs -mkdir -p /lakehouse/raw`
-   - `hdfs dfs -put -f /path/to/*.csv /lakehouse/raw/`
+## 3) Chạy từ đầu (từ bước build image)
 
-## 4) Giai đoạn 2 - Bronze (đọc sao ghi vậy)
-Script Bronze:
-- `src/01_brz/ingest_bronze.py`
-- `src/01_brz/brz_ingest_all.py` (wrapper chạy nhanh)
+### Bước 1 - Build image
 
-Chạy trong container master:
-- `spark-submit /path/to/src/01_brz/ingest_bronze.py`
+> Image trong `Docker-compose.yml` đang dùng tên: `nhom17`
 
-Kết quả tạo các bảng:
-- `bronze_orders`
-- `bronze_products`
-- `bronze_customers`
-- `bronze_sellers`
-- `bronze_order_items`
-- `bronze_order_payments`
-- `bronze_order_reviews`
-- `bronze_translation`
+```bash
+docker build --no-cache -f docker/Dockerfile -t nhom17 .
+```
 
-> Bronze không làm sạch dữ liệu, chỉ ingest và đổi tên chuẩn.
+### Bước 2 - Khởi động cluster
 
-## 5) Silver và Gold
-Tạo sẵn khung file trong `src/02_slv/` và `src/03_gld/` 
+```bash
+docker compose -f Docker-compose.yml down -v
+docker compose -f Docker-compose.yml up -d
+docker compose -f Docker-compose.yml ps
+```
 
-## 6) Trực quan
-Kết nối Superset (Visualization)
-Truy cập: http://localhost:8080.
+### Bước 3 - Chờ hệ thống sẵn sàng
 
-Kết nối Database (SQLAlchemy URI):
-hive://master:10001/default
+```bash
+docker compose -f Docker-compose.yml logs -f master
+```
 
-Tạo Dataset từ các bảng có tiền tố gld_ để vẽ Dashboard.
+Khi thấy HDFS/YARN/Spark Thrift đã lên ổn thì sang bước tiếp.
+
+### Bước 4 - Tạo thư mục Lakehouse trên HDFS
+
+```bash
+docker exec -it master hdfs dfsadmin -safemode leave || true
+docker exec -it master hdfs dfs -mkdir -p /lakehouse/raw
+docker exec -it master hdfs dfs -chmod -R 777 /lakehouse
+```
+
+### Bước 5 - Đẩy dữ liệu CSV lên HDFS
+
+```bash
+docker exec -it master hdfs dfs -put -f /data/*.csv /lakehouse/raw/
+docker exec -it master hdfs dfs -ls /lakehouse/raw/
+```
+
+### Bước 6 - Chạy Bronze
+
+```bash
+docker exec -it master spark-submit /app/src/01_brz/brz_ingest_all.py
+```
+
+### Bước 7 - Chạy Silver
+
+```bash
+docker exec -it master spark-submit /app/src/02_slv/slv_orders.py
+docker exec -it master spark-submit /app/src/02_slv/slv_order_items.py
+docker exec -it master spark-submit /app/src/02_slv/slv_customers.py
+docker exec -it master spark-submit /app/src/02_slv/slv_sellers.py
+```
+
+### Bước 8 - Chạy Gold
+
+```bash
+docker exec -it master spark-submit /app/src/03_gld/gld_sales_report.py
+docker exec -it master spark-submit /app/src/03_gld/gld_delivery_perf.py
+```
+
+## 4) Truy cập UI
+
+- HDFS NameNode: http://localhost:9870
+- YARN: http://localhost:8089
+- Superset: http://localhost:8080
+- Spark Thrift Server: `master:10001`
+
+## 5) Kết nối Superset
+
+Trong Superset, tạo database với SQLAlchemy URI:
+
+`hive://master:10001/default`
+
+Sau đó tạo dataset từ bảng Gold để vẽ dashboard.
+
+## 6) Lỗi thường gặp
+
+### `Name node is in safe mode`
+
+```bash
+docker exec -it master hdfs dfsadmin -safemode leave
+```
+
+### `no configuration file provided: not found`
+
+Dùng đúng file tên chữ hoa:
+
+```bash
+docker compose -f Docker-compose.yml up -d
+```
+
+### Build image xong nhưng compose vẫn chạy image cũ
+
+Build đúng tên image như compose đang dùng (`nhom17`):
+
+```bash
+docker build --no-cache -f docker/Dockerfile -t nhom17 .
+```
