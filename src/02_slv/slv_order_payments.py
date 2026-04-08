@@ -22,6 +22,8 @@ from pyspark.sql.functions import (
 HDFS_PREFIX = "hdfs://master:9000/lakehouse"
 HDFS_BRZ = f"{HDFS_PREFIX}/brz"
 HDFS_SLV = f"{HDFS_PREFIX}/slv"
+SILVER_TABLE = "silver_order_payments"
+SILVER_TABLE_PATH = f"{HDFS_SLV}/{SILVER_TABLE}"
 
 def tao_spark() -> SparkSession:
     """Tạo SparkSession."""
@@ -29,6 +31,7 @@ def tao_spark() -> SparkSession:
         SparkSession.builder
         .appName("slv_order_payments")
         .config("spark.sql.adaptive.enabled", "true")
+        .enableHiveSupport()
         .getOrCreate()
     )
 
@@ -71,8 +74,15 @@ def xu_ly_order_payments(spark: SparkSession) -> None:
     
     df = df.filter(col("order_id").isNotNull() & col("payment_value").isNotNull())
     
-    df.write.mode("overwrite").parquet(f"{HDFS_SLV}/silver_order_payments")
-    print(f"\nGhi thành công: {HDFS_SLV}/silver_order_payments/")
+    (
+        df.write
+        .format("parquet")
+        .mode("overwrite")
+        .option("path", SILVER_TABLE_PATH)
+        .saveAsTable(f"default.{SILVER_TABLE}")
+    )
+    print(f"\nGhi thành công: {SILVER_TABLE_PATH}/")
+    print(f"Đăng ký bảng Hive: default.{SILVER_TABLE}")
     
     print("\nTHỐNG KÊ")
     print(f"Tổng records: {df.count():,}")

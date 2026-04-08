@@ -1,14 +1,16 @@
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import *
+from pyspark.sql.functions import avg, count, date_format, desc, round, sum
 
 spark = SparkSession.builder \
     .appName("Gold - Sales Report") \
+    .enableHiveSupport() \
     .getOrCreate()
 
 spark.sparkContext.setLogLevel("WARN")
 
 # Đọc trực tiếp từ HDFS
 HDFS = "hdfs://master:9000/lakehouse/slv"
+HDFS_GLD = "hdfs://master:9000/lakehouse/gld"
 
 orders    = spark.read.parquet(f"{HDFS}/silver_orders")
 items     = spark.read.parquet(f"{HDFS}/silver_order_items")
@@ -25,7 +27,13 @@ monthly_revenue = (
          count("order_id").alias("total_orders"))
     .orderBy("month")
 )
-monthly_revenue.write.mode("overwrite").parquet("hdfs://master:9000/lakehouse/gld/gold_monthly_revenue")
+(
+    monthly_revenue.write
+    .format("parquet")
+    .mode("overwrite")
+    .option("path", f"{HDFS_GLD}/gold_monthly_revenue")
+    .saveAsTable("default.gold_monthly_revenue")
+)
 monthly_revenue.show(5)
 print("gold_monthly_revenue done")
 
@@ -38,7 +46,13 @@ top_products = (
     .orderBy(desc("total_orders"))
     .limit(10)
 )
-top_products.write.mode("overwrite").parquet("hdfs://master:9000/lakehouse/gld/gold_top_products")
+(
+    top_products.write
+    .format("parquet")
+    .mode("overwrite")
+    .option("path", f"{HDFS_GLD}/gold_top_products")
+    .saveAsTable("default.gold_top_products")
+)
 top_products.show()
 print("gold_top_products done")
 
@@ -51,7 +65,13 @@ region_revenue = (
          round(sum("payment_value"), 2).alias("total_revenue"))
     .orderBy(desc("total_revenue"))
 )
-region_revenue.write.mode("overwrite").parquet("hdfs://master:9000/lakehouse/gld/gold_region_revenue")
+(
+    region_revenue.write
+    .format("parquet")
+    .mode("overwrite")
+    .option("path", f"{HDFS_GLD}/gold_region_revenue")
+    .saveAsTable("default.gold_region_revenue")
+)
 region_revenue.show()
 print("gold_region_revenue done")
 
@@ -63,7 +83,13 @@ payment_method = (
          round(avg("payment_installments"), 1).alias("avg_installments"))
     .orderBy(desc("total_revenue"))
 )
-payment_method.write.mode("overwrite").parquet("hdfs://master:9000/lakehouse/gld/gold_payment_method")
+(
+    payment_method.write
+    .format("parquet")
+    .mode("overwrite")
+    .option("path", f"{HDFS_GLD}/gold_payment_method")
+    .saveAsTable("default.gold_payment_method")
+)
 payment_method.show()
 print("gold_payment_method done")
 

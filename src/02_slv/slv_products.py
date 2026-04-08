@@ -23,6 +23,8 @@ from pyspark.sql.functions import (
 HDFS_PREFIX = "hdfs://master:9000/lakehouse"
 HDFS_BRZ = f"{HDFS_PREFIX}/brz"
 HDFS_SLV = f"{HDFS_PREFIX}/slv"
+SILVER_TABLE = "silver_products"
+SILVER_TABLE_PATH = f"{HDFS_SLV}/{SILVER_TABLE}"
 
 
 def tao_spark() -> SparkSession:
@@ -31,6 +33,7 @@ def tao_spark() -> SparkSession:
         SparkSession.builder
         .appName("slv_products")
         .config("spark.sql.adaptive.enabled", "true")
+        .enableHiveSupport()
         .getOrCreate()
     )
 
@@ -115,10 +118,13 @@ def xu_ly_products(spark: SparkSession) -> None:
     print("\n[5/6] Đang ghi dữ liệu ra HDFS...")
     (
         df.write
+        .format("parquet")
         .mode("overwrite")
-        .parquet(f"{HDFS_SLV}/silver_products")
+        .option("path", SILVER_TABLE_PATH)
+        .saveAsTable(f"default.{SILVER_TABLE}")
     )
-    print(f"  Ghi thành công: {HDFS_SLV}/silver_products/")
+    print(f"  Ghi thành công: {SILVER_TABLE_PATH}/")
+    print(f"  Đăng ký bảng Hive: default.{SILVER_TABLE}")
     
     print("\n[6/6] --- THỐNG KÊ KẾT QUẢ ---")
     print(f"  Tổng số sản phẩm (Sạch): {df.count():,}")

@@ -3,12 +3,14 @@ from pyspark.sql.functions import *
 
 spark = SparkSession.builder \
     .appName("Gold - Delivery Performance") \
+    .enableHiveSupport() \
     .getOrCreate()
 
 spark.sparkContext.setLogLevel("WARN")
 
 # Đọc trực tiếp từ HDFS
 HDFS = "hdfs://master:9000/lakehouse/slv"
+HDFS_GLD = "hdfs://master:9000/lakehouse/gld"
 
 orders  = spark.read.parquet(f"{HDFS}/silver_orders")
 reviews = spark.read.parquet(f"{HDFS}/silver_order_reviews")
@@ -25,7 +27,13 @@ delivery = (
     .agg(count("order_id").alias("total_orders"),
          round(avg("delivery_days"), 1).alias("avg_delivery_days"))
 )
-delivery.write.mode("overwrite").parquet("hdfs://master:9000/lakehouse/gld/gold_delivery_performance")
+(
+    delivery.write
+    .format("parquet")
+    .mode("overwrite")
+    .option("path", f"{HDFS_GLD}/gold_delivery_performance")
+    .saveAsTable("default.gold_delivery_performance")
+)
 delivery.show()
 print("gold_delivery_performance done")
 
@@ -38,7 +46,13 @@ review_score = (
     .groupBy("delivery_status")
     .agg(round(avg("review_score"), 2).alias("avg_review_score"))
 )
-review_score.write.mode("overwrite").parquet("hdfs://master:9000/lakehouse/gld/gold_review_by_delivery")
+(
+    review_score.write
+    .format("parquet")
+    .mode("overwrite")
+    .option("path", f"{HDFS_GLD}/gold_review_by_delivery")
+    .saveAsTable("default.gold_review_by_delivery")
+)
 review_score.show()
 print("gold_review_by_delivery done")
 

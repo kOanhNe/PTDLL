@@ -23,6 +23,8 @@ from pyspark.sql.functions import (
 HDFS_PREFIX = "hdfs://master:9000/lakehouse"
 HDFS_BRZ = f"{HDFS_PREFIX}/brz"
 HDFS_SLV = f"{HDFS_PREFIX}/slv"
+SILVER_TABLE = "silver_order_reviews"
+SILVER_TABLE_PATH = f"{HDFS_SLV}/{SILVER_TABLE}"
 
 
 def tao_spark() -> SparkSession:
@@ -31,6 +33,7 @@ def tao_spark() -> SparkSession:
         SparkSession.builder
         .appName("slv_order_reviews")
         .config("spark.sql.adaptive.enabled", "true")
+        .enableHiveSupport()
         .getOrCreate()
     )
 
@@ -117,10 +120,13 @@ def xu_ly_order_reviews(spark: SparkSession) -> None:
     
     (
         df.write
+        .format("parquet")
         .mode("overwrite")
-        .parquet(f"{HDFS_SLV}/silver_order_reviews")
+        .option("path", SILVER_TABLE_PATH)
+        .saveAsTable(f"default.{SILVER_TABLE}")
     )
-    print(f"\nGhi thành công: {HDFS_SLV}/silver_order_reviews/")
+    print(f"\nGhi thành công: {SILVER_TABLE_PATH}/")
+    print(f"Đăng ký bảng Hive: default.{SILVER_TABLE}")
     
     print("\n--- THỐNG KÊ DỮ LIỆU ---")
     print(f"Tổng số Reviews: {df.count():,}")

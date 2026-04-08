@@ -32,6 +32,8 @@ from pyspark.sql.functions import (
 HDFS_PREFIX = "hdfs://master:9000/lakehouse"
 HDFS_BRZ = f"{HDFS_PREFIX}/brz"
 HDFS_SLV = f"{HDFS_PREFIX}/slv"
+SILVER_TABLE = "silver_customers"
+SILVER_TABLE_PATH = f"{HDFS_SLV}/{SILVER_TABLE}"
 
 
 def tao_spark() -> SparkSession:
@@ -40,6 +42,7 @@ def tao_spark() -> SparkSession:
         SparkSession.builder
         .appName("slv_customers")
         .config("spark.sql.adaptive.enabled", "true")
+        .enableHiveSupport()
         .getOrCreate()
     )
 
@@ -110,11 +113,14 @@ def xu_ly_customers(spark: SparkSession) -> None:
     
     (
         df.write
+        .format("parquet")
         .mode("overwrite")
-        .parquet(f"{HDFS_SLV}/silver_customers")
+        .option("path", SILVER_TABLE_PATH)
+        .saveAsTable(f"default.{SILVER_TABLE}")
     )
-    
-    print(f"  Ghi thành công: {HDFS_SLV}/silver_customers/")
+
+    print(f"  Ghi thành công: {SILVER_TABLE_PATH}/")
+    print(f"  Đăng ký bảng Hive: default.{SILVER_TABLE}")
     
     # Hiển thị schema
     print("\nSchema silver_customers")

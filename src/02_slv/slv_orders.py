@@ -34,6 +34,8 @@ from pyspark.sql.types import StructType, StructField, StringType, IntegerType
 HDFS_PREFIX = "hdfs://master:9000/lakehouse"
 HDFS_BRZ = f"{HDFS_PREFIX}/brz"
 HDFS_SLV = f"{HDFS_PREFIX}/slv"
+SILVER_TABLE = "silver_orders"
+SILVER_TABLE_PATH = f"{HDFS_SLV}/{SILVER_TABLE}"
 
 # Định dạng timestamp Olist
 TIMESTAMP_FORMAT = "yyyy-MM-dd HH:mm:ss"
@@ -45,6 +47,7 @@ def tao_spark() -> SparkSession:
         SparkSession.builder
         .appName("slv_orders")
         .config("spark.sql.adaptive.enabled", "true")
+        .enableHiveSupport()
         .getOrCreate()
     )
 
@@ -129,14 +132,17 @@ def xu_ly_orders(spark: SparkSession) -> None:
     
     (
         df.write
+        .format("parquet")
         .mode("overwrite")
-        .parquet(f"{HDFS_SLV}/silver_orders")
+        .option("path", SILVER_TABLE_PATH)
+        .saveAsTable(f"default.{SILVER_TABLE}")
     )
-    
-    print(f"  Ghi thành công: {HDFS_SLV}/silver_orders/")
+
+    print(f"  Ghi thành công: {SILVER_TABLE_PATH}/")
+    print(f"  Đăng ký bảng Hive: default.{SILVER_TABLE}")
     
     # Hiển thị schema
-    print("\Schema silver_orders")
+    print("\nSchema silver_orders")
     df.printSchema()
     
     # Hiển thị sample data
