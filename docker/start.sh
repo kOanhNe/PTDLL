@@ -34,7 +34,13 @@ if [ "$HOSTNAME" = "master" ]; then
 
     # --- CẤU HÌNH CHO LAKEHOUSE & SUPERSET ---
 
-    # 6. Khởi động Hive Metastore (Bắt buộc để lưu Metadata bảng)
+    # 6. Khởi tạo schema + khởi động Hive Metastore (bắt buộc cho Hive 4)
+    echo "Checking Hive Metastore schema..."
+    if ! schematool -dbType derby -info >/opt/hadoop/logs/hive-schematool.log 2>&1; then
+        echo "Initializing Hive Metastore schema..."
+        schematool -dbType derby -initSchema >> /opt/hadoop/logs/hive-schematool.log 2>&1
+    fi
+
     echo "Starting Hive Metastore..."
     nohup hive --service metastore > /opt/hadoop/logs/hive-metastore.log 2>&1 &
     sleep 10 # Đợi Metastore khởi động xong

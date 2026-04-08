@@ -132,15 +132,19 @@ def xu_ly_orders(spark: SparkSession) -> None:
     
     df.write.mode("overwrite").parquet(SILVER_TABLE_PATH)
 
-    spark.sql(f"DROP TABLE IF EXISTS default.{SILVER_TABLE}")
-    spark.sql(f"""
-        CREATE TABLE default.{SILVER_TABLE}
-        USING PARQUET
-        LOCATION '{SILVER_TABLE_PATH}'
-    """)
-
     print(f"  Ghi thành công: {SILVER_TABLE_PATH}/")
-    print(f"  Đăng ký bảng Hive: default.{SILVER_TABLE}")
+
+    try:
+        spark.sql(f"DROP TABLE IF EXISTS default.{SILVER_TABLE}")
+        spark.sql(f"""
+            CREATE TABLE default.{SILVER_TABLE}
+            USING PARQUET
+            LOCATION '{SILVER_TABLE_PATH}'
+        """)
+        print(f"  Đăng ký bảng Hive: default.{SILVER_TABLE}")
+    except Exception as e:
+        print(f"  Cảnh báo: Không đăng ký được bảng Hive ({e})")
+        print("  Silver vẫn được ghi Parquet bình thường.")
     
     # Hiển thị schema
     print("\nSchema silver_orders")

@@ -49,6 +49,21 @@ def tao_spark() -> SparkSession:
     )
 
 
+def dang_ky_bang_hive_an_toan(spark: SparkSession, ten_bang: str, duong_dan: str) -> None:
+    """Đăng ký bảng Hive, nếu lỗi thì chỉ cảnh báo để pipeline không bị dừng."""
+    try:
+        spark.sql(f"DROP TABLE IF EXISTS default.{ten_bang}")
+        spark.sql(f"""
+            CREATE TABLE default.{ten_bang}
+            USING PARQUET
+            LOCATION '{duong_dan}'
+        """)
+        print(f"  Đăng ký bảng Hive: default.{ten_bang}")
+    except Exception as e:
+        print(f"  Cảnh báo: Không đăng ký được bảng Hive default.{ten_bang} ({e})")
+        print("  Dữ liệu Parquet vẫn sẵn sàng trong HDFS.")
+
+
 def xu_ly_order_items(spark: SparkSession) -> None:
     """
     Xử lý bảng Order Items:
@@ -133,15 +148,8 @@ def xu_ly_order_items(spark: SparkSession) -> None:
     
     df.write.mode("overwrite").parquet(SILVER_TABLE_PATH)
 
-    spark.sql(f"DROP TABLE IF EXISTS default.{SILVER_TABLE}")
-    spark.sql(f"""
-        CREATE TABLE default.{SILVER_TABLE}
-        USING PARQUET
-        LOCATION '{SILVER_TABLE_PATH}'
-    """)
-
     print(f"  Ghi thành công: {SILVER_TABLE_PATH}/")
-    print(f"  Đăng ký bảng Hive: default.{SILVER_TABLE}")
+    dang_ky_bang_hive_an_toan(spark, SILVER_TABLE, SILVER_TABLE_PATH)
     
     # Hiển thị schema
     print("\nSchema silver_order_items")

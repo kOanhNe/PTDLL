@@ -48,10 +48,17 @@ RUN ssh-keygen -t rsa -P '' -f ~/.ssh/id_rsa && \
 
 # 6. THIẾT LẬP CẤU HÌNH
 COPY docker/config/* $HADOOP_CONF_DIR/
+
+# SỬA LẠI DÒNG NÀY: Dùng 'find' để chỉ tóm các file (type f), bỏ qua thư mục
+RUN find $HADOOP_CONF_DIR -type f -exec sed -i 's/\r$//' {} +
+
 COPY docker/config/hive-site.xml $HIVE_HOME/conf/
 # Mở comment dòng này nếu bạn muốn Spark nhận cấu hình Hive ngay lập tức
 COPY docker/config/hive-site.xml $SPARK_HOME/conf/
 COPY docker/config/spark-defaults.conf $SPARK_HOME/conf/
+
+# Quét sạch ký tự \r cho file cấu hình của Spark để tránh lỗi khi đọc config
+RUN sed -i 's/\r$//' $SPARK_HOME/conf/spark-defaults.conf
 
 # 7. BIẾN MÔI TRƯỜNG HADOOP USER
 ENV HDFS_NAMENODE_USER=root
