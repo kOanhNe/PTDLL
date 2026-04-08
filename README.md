@@ -2,6 +2,10 @@
 
 Project ETL Lakehouse chạy trên Hadoop + Spark + Hive + Superset.
 
+# Nếu buil lại image nhiều:
+
+docker builder prune -a -f
+
 ## 1) Cấu trúc chính
 
 ```text
