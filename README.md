@@ -49,6 +49,7 @@ docker build --no-cache -f docker/Dockerfile -t nhom17 .
 ### Bước 2 - Khởi động cluster
 
 ```bash
+docker compose down
 docker compose up -d
 ```
 
@@ -111,6 +112,25 @@ spark-submit /app/src/03_gld/gld_delivery_perf.py
 
 ## 5) Kết nối Superset
 
+### 5.1 Khởi tạo Superset lần đầu (bắt buộc)
+
+Container `superset` trong compose hiện chỉ chạy web server, nên lần đầu cần init DB + tạo user admin thủ công.
+
+```bash
+docker exec -it superset superset db upgrade
+docker exec -it superset superset fab create-admin \
+    --username admin \
+    --firstname Admin \
+    --lastname User \
+    --email admin@local.com \
+    --password admin
+docker exec -it superset superset init
+```
+
+Đăng nhập tại: `http://localhost:8080` với tài khoản vừa tạo.
+
+### 5.2 Tạo kết nối Hive/Spark Thrift trong Superset
+
 Trong Superset, tạo database với SQLAlchemy URI:
 
 `hive://master:10001/default`
@@ -121,7 +141,7 @@ Kiểm tra nhanh bảng đã đăng ký trong Hive Metastore:
 beeline -u 'jdbc:hive2://master:10001/default' -n hive -e 'show tables;'
 ```
 
-Sau đó tạo dataset từ các bảng Gold để vẽ dashboard.
+Sau đó vào **Data → Datasets → + Dataset**, chọn các bảng Gold để vẽ chart/dashboard.
 
 ## 6) Lỗi thường gặp
 
