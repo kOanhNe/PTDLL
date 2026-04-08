@@ -3,8 +3,9 @@
 Project ETL Lakehouse chạy trên Hadoop + Spark + Hive + Superset.
 
 # Nếu buil lại image nhiều:
-
+```bash
 docker builder prune -a -f
+```
 
 ## 1) Cấu trúc chính
 
@@ -55,33 +56,29 @@ docker compose up -d
 
 ### Bước 3 - Vào Bash
 
+```bash
 docker exec -it master bash
-
+```
 Khi thấy HDFS/YARN/Spark Thrift đã lên ổn thì sang bước tiếp.
-
-
 
 ### Bước 4 - Tạo thư mục Lakehouse trên HDFS
 
 ```bash
-docker exec -it master hdfs dfsadmin -safemode leave || true
-docker exec -it master hdfs dfs -mkdir -p /lakehouse/raw
-docker exec -it master hdfs dfs -chmod -R 777 /lakehouse
+hdfs dfs -mkdir -p /lakehouse/raw
+hdfs dfs -chmod -R 777 /lakehouse
 ```
 
 ### Bước 5 - Đẩy dữ liệu CSV lên HDFS
 
 ```bash
-docker exec -it master bash -lc "hdfs dfs -put -f /data/*.csv /lakehouse/raw/"
-docker exec -it master hdfs dfs -ls /lakehouse/raw/
+hdfs dfs -put -f /data/*.csv /lakehouse/raw/
+hdfs dfs -ls /lakehouse/raw/
 ```
-
-> Lưu ý (macOS zsh): dùng `bash -lc` để wildcard `*.csv` được expand bên trong container.
 
 ### Bước 6 - Chạy Bronze
 
 ```bash
-docker exec -it master spark-submit /app/src/01_brz/brz_ingest_all.py
+spark-submit /app/src/01_brz/brz_ingest_all.py
 ```
 
 ### Bước 7 - Chạy Silver
@@ -129,16 +126,25 @@ docker exec -it superset superset init
 
 Đăng nhập tại: `http://localhost:8080` với tài khoản vừa tạo.
 
-### 5.2 Tạo kết nối Hive/Spark Thrift trong Superset
+### 5.2 trong Superset
 
-Trong Superset, tạo database với SQLAlchemy URI:
+Trong Superset:
+
+1. Vào **Settings → Database Connections** (hoặc **Data → Databases** tùy version).
+2. Chọn **+ DATABASE**.
+3. Ở mục engine/chọn loại kết nối, chọn **Apache Spark SQL**.
+4. Nhập URL (SQLAlchemy URI):
 
 `hive://master:10001/default`
+
+5. Bấm **Test Connection** → **Connect** (hoặc **Save**) khi pass.
+
+> Nếu vẫn lỗi auth, thử URI: `hive://master:10001/default?auth=NOSASL`
 
 Kiểm tra nhanh bảng đã đăng ký trong Hive Metastore:
 
 ```bash
-beeline -u 'jdbc:hive2://master:10001/default' -n hive -e 'show tables;'
+docker exec -it master bash -lc "beeline -u 'jdbc:hive2://master:10001/default' -n hive -e 'show tables;'"
 ```
 
 Sau đó vào **Data → Datasets → + Dataset**, chọn các bảng Gold để vẽ chart/dashboard.
@@ -148,7 +154,7 @@ Sau đó vào **Data → Datasets → + Dataset**, chọn các bảng Gold để
 ### `Name node is in safe mode`
 
 ```bash
-hdfs dfsadmin -safemode leave
+docker exec -it master hdfs dfsadmin -safemode leave
 ```
 
 ### Build image xong nhưng compose vẫn chạy image cũ
