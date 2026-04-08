@@ -4,7 +4,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 # 1. Cài đặt các gói cơ bản và Java 21
 RUN apt-get update && apt-get install -y \
-    openjdk-21-jdk \
+    openjdk-17-jdk \
     ssh \
     pdsh \
     vim \
@@ -12,7 +12,7 @@ RUN apt-get update && apt-get install -y \
     net-tools \
     && apt-get clean
 
-ENV JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
+ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
 ENV PATH=$PATH:$JAVA_HOME/bin
 
 # 2. Cài đặt Hadoop 3.3.6 (Dùng ADD để tự giải nén tiết kiệm chỗ)
@@ -24,9 +24,9 @@ ENV PATH=$PATH:$HADOOP_HOME/bin:$HADOOP_HOME/sbin
 
 # --- BỎ PHẦN PIG TẠI ĐÂY ---
 
-# 3. Cài đặt Hive 4.2.0
-ADD apache-hive-4.2.0-bin.tar.gz /opt/
-RUN mv /opt/apache-hive-4.2.0-bin /opt/hive
+# 3. Cài đặt Hive 2.3.10
+ADD apache-hive-2.3.10-bin.tar.gz /opt/
+RUN mv /opt/apache-hive-2.3.10-bin /opt/hive
 ENV HIVE_HOME=/opt/hive
 ENV PATH=$PATH:$HIVE_HOME/bin
 

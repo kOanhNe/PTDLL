@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 # 1. Khởi động SSH
 service ssh start
@@ -34,6 +35,25 @@ if [ "$HOSTNAME" = "master" ]; then
 
     # --- CẤU HÌNH CHO LAKEHOUSE & SUPERSET ---
 
+    wait_for_port() {
+        local host="$1"
+        local port="$2"
+        local retries="${3:-30}"
+        local sleep_sec="${4:-2}"
+
+        for i in $(seq 1 "$retries"); do
+            if bash -c "</dev/tcp/${host}/${port}" >/dev/null 2>&1; then
+                echo "Port ${host}:${port} is ready"
+                return 0
+            fi
+            echo "Waiting ${host}:${port} (${i}/${retries})..."
+            sleep "$sleep_sec"
+        done
+
+        echo "ERROR: ${host}:${port} is not ready after ${retries} retries"
+        return 1
+    }
+
     # 6. Khởi tạo schema + khởi động Hive Metastore (bắt buộc cho Hive 4)
     echo "Checking Hive Metastore schema..."
     if ! schematool -dbType derby -info >/opt/hadoop/logs/hive-schematool.log 2>&1; then
@@ -43,19 +63,23 @@ if [ "$HOSTNAME" = "master" ]; then
 
     echo "Starting Hive Metastore..."
     nohup hive --service metastore > /opt/hadoop/logs/hive-metastore.log 2>&1 &
-    sleep 10 # Đợi Metastore khởi động xong
+    wait_for_port localhost 9083 40 2
 
     # 7. Khởi động Spark Thrift Server (Cổng kết nối SQL cho Superset)
     # Dùng cổng 10001 để tránh đụng độ với Hive (nếu có)
     echo "Starting Spark Thrift Server (The Lakehouse Engine)..."
     $SPARK_HOME/sbin/start-thriftserver.sh \
         --master yarn \
+        --deploy-mode client \
+        --conf spark.hadoop.hive.metastore.uris=thrift://master:9083 \
         --conf spark.sql.warehouse.dir=/user/hive/warehouse \
         --conf spark.executor.memory=1g \
         --conf spark.driver.memory=1g \
+        --hiveconf hive.server2.thrift.bind.host=0.0.0.0 \
         --hiveconf hive.server2.thrift.port=10001 \
-        --hiveconf hive.server2.authentication=NONE \
-        > /opt/hadoop/logs/spark-thrift.log 2>&1 &
+        --hiveconf hive.server2.authentication=NONE
+
+    wait_for_port localhost 10001 50 2
     
     echo "Lakehouse services are ready!"
 fi
