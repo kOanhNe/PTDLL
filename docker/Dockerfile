@@ -47,10 +47,10 @@ RUN ssh-keygen -t rsa -P '' -f ~/.ssh/id_rsa && \
     echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config
 
 # 6. THIẾT LẬP CẤU HÌNH
-COPY config/* $HADOOP_CONF_DIR/
-COPY config/hive-site.xml $HIVE_HOME/conf/
+COPY docker/config/* $HADOOP_CONF_DIR/
+COPY docker/config/hive-site.xml $HIVE_HOME/conf/
 # Mở comment dòng này nếu bạn muốn Spark nhận cấu hình Hive ngay lập tức
-COPY config/hive-site.xml $SPARK_HOME/conf/
+COPY docker/config/hive-site.xml $SPARK_HOME/conf/
 
 # 7. BIẾN MÔI TRƯỜNG HADOOP USER
 ENV HDFS_NAMENODE_USER=root
