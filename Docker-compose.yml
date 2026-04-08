@@ -1,7 +1,7 @@
 version: "3"
 services:
   master:
-    image: hadooptrang
+    image: nhom17
     container_name: master
     hostname: master
     ports:
@@ -15,14 +15,14 @@ services:
       - hadoop_net
 
   slave1:
-    image: hadooptrang
+    image: nhom17
     container_name: slave1
     hostname: slave1
     networks:
       - hadoop_net
 
   slave2:
-    image: hadooptrang
+    image: nhom17
     container_name: slave2
     hostname: slave2
     networks:
@@ -38,7 +38,7 @@ services:
     networks:
       - hadoop_net
     environment:
-      - SUPERSET_SECRET_KEY=althea_lakehouse_2026
+      - SUPERSET_SECRET_KEY=lakehouse_2026
     entrypoint: >
       sh -c "
         pip install pyhive thrift thrift-sasl &&

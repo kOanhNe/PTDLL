@@ -60,7 +60,7 @@ ENV YARN_RESOURCEMANAGER_USER=root
 ENV YARN_NODEMANAGER_USER=root
 
 # 8. KHỞI CHẠY
-COPY start.sh /start.sh
+COPY docker/start.sh /start.sh
 RUN chmod +x /start.sh
 
 WORKDIR /opt/hadoop
