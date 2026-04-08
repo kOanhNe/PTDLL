@@ -37,14 +37,20 @@ services:
       - "8080:8088" # Truy cập Superset tại localhost:8080
     networks:
       - hadoop_net
+    volumes:
+      - superset_home:/app/superset_home
     environment:
       - SUPERSET_SECRET_KEY=lakehouse_2026
     entrypoint: >
       sh -c "
-        pip install pyhive thrift thrift-sasl &&
+        /app/.venv/bin/python -m ensurepip --upgrade &&
+        /app/.venv/bin/python -m pip install --no-cache-dir pyhive thrift thrift_sasl pure-sasl &&
         /usr/bin/run-server.sh
       "
 
 networks:
   hadoop_net:
     driver: bridge
+
+volumes:
+  superset_home:

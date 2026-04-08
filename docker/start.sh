@@ -77,7 +77,7 @@ if [ "$HOSTNAME" = "master" ]; then
         --conf spark.driver.memory=1g \
         --hiveconf hive.server2.thrift.bind.host=0.0.0.0 \
         --hiveconf hive.server2.thrift.port=10001 \
-        --hiveconf hive.server2.authentication=NONE
+        --hiveconf hive.server2.authentication=NOSASL
 
     wait_for_port localhost 10001 50 2
     
