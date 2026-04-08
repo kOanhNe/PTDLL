@@ -1,5 +1,5 @@
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import *
+from pyspark.sql.functions import avg, col, count, datediff, round, when
 
 spark = SparkSession.builder \
     .appName("Gold - Delivery Performance") \

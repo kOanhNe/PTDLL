@@ -67,9 +67,11 @@ docker exec -it master hdfs dfs -chmod -R 777 /lakehouse
 ### Bước 5 - Đẩy dữ liệu CSV lên HDFS
 
 ```bash
-docker exec -it master hdfs dfs -put -f /data/*.csv /lakehouse/raw/
+docker exec -it master bash -lc "hdfs dfs -put -f /data/*.csv /lakehouse/raw/"
 docker exec -it master hdfs dfs -ls /lakehouse/raw/
 ```
+
+> Lưu ý (macOS zsh): dùng `bash -lc` để wildcard `*.csv` được expand bên trong container.
 
 ### Bước 6 - Chạy Bronze
 
@@ -84,6 +86,9 @@ docker exec -it master spark-submit /app/src/02_slv/slv_orders.py
 docker exec -it master spark-submit /app/src/02_slv/slv_order_items.py
 docker exec -it master spark-submit /app/src/02_slv/slv_customers.py
 docker exec -it master spark-submit /app/src/02_slv/slv_sellers.py
+docker exec -it master spark-submit /app/src/02_slv/slv_order_payments.py
+docker exec -it master spark-submit /app/src/02_slv/slv_order_reviews.py
+docker exec -it master spark-submit /app/src/02_slv/slv_products.py
 ```
 
 ### Bước 8 - Chạy Gold
@@ -106,7 +111,13 @@ Trong Superset, tạo database với SQLAlchemy URI:
 
 `hive://master:10001/default`
 
-Sau đó tạo dataset từ bảng Gold để vẽ dashboard.
+Kiểm tra nhanh bảng đã đăng ký trong Hive Metastore:
+
+```bash
+docker exec -it master bash -lc "beeline -u 'jdbc:hive2://master:10001/default' -n hive -e 'show tables;'"
+```
+
+Sau đó tạo dataset từ các bảng Gold để vẽ dashboard.
 
 ## 6) Lỗi thường gặp
 
