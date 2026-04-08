@@ -16,7 +16,7 @@ Chạy:
 
 from pyspark.sql import SparkSession, Window
 from pyspark.sql.functions import (
-    col, trim, when, row_number, desc, coalesce, count, sum
+    col, trim, lower, when, row_number, desc, coalesce, count, sum
 )
 
 HDFS_PREFIX = "hdfs://master:9000/lakehouse"
@@ -52,7 +52,7 @@ def xu_ly_order_payments(spark: SparkSession) -> None:
         df
         .withColumn("order_id", col("order_id"))
         .withColumn("payment_sequential", col("payment_sequential").cast("int"))
-        .withColumn("payment_type", trim(col("payment_type")))
+        .withColumn("payment_type", lower(trim(col("payment_type"))))
         .withColumn("payment_installments", 
                     when((col("payment_installments") == "") | col("payment_installments").isNull(), 1)
                     .otherwise(col("payment_installments").cast("int")))
@@ -60,17 +60,14 @@ def xu_ly_order_payments(spark: SparkSession) -> None:
     )
     
     print("\n[3/4] Phân loại payment_type...")
-    payment_type_mapping = {
-        "credit_card": "Credit Card",
-        "debit_card": "Debit Card",
-        "boleto": "Boleto",
-        "voucher": "Voucher"
-    }
-    for old, new in payment_type_mapping.items():
-        df = df.withColumn(
-            "payment_type",
-            when(col("payment_type").like(f"%{old}%"), new).otherwise(col("payment_type"))
-        )
+    df = df.withColumn(
+        "payment_type",
+        when(col("payment_type") == "credit_card", "Credit Card")
+        .when(col("payment_type") == "debit_card", "Debit Card")
+        .when(col("payment_type") == "boleto", "Boleto")
+        .when(col("payment_type") == "voucher", "Voucher")
+        .otherwise(col("payment_type"))
+    )
     
     df = df.filter(col("order_id").isNotNull() & col("payment_value").isNotNull())
     
