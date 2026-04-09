@@ -10,7 +10,8 @@ docker builder prune -a -f
 ## 1) Cấu trúc chính
 
 ```text
-hadooptrang/
+PTDLL/
+├── flow.py
 ├── Docker-compose.yml
 ├── README.md
 ├── data/
@@ -53,6 +54,32 @@ docker build --no-cache -f docker/Dockerfile -t nhom17 .
 docker compose down
 docker compose up -d
 ```
+
+## 🌟 3) Chạy tự động với Prefect (Khuyên dùng)
+
+Thay vì chạy tay từng bước từ Bước 3 đến Bước 8, hệ thống đã tích hợp Prefect Orchestrator để tự động hóa toàn bộ quy trình qua Network (SSH).
+
+### Bước 3.1: Cài đặt thư viện cho Prefect (Chỉ làm lần đầu)
+
+```bash
+docker exec -u root prefect pip install paramiko pyhive thrift
+```
+
+### Bước 3.2: Thực thi toàn bộ Pipeline (End-to-End)
+
+Lệnh này sẽ tự động tạo thư mục HDFS, nạp dữ liệu, và chạy lần lượt Bronze -> Silver -> Gold:
+
+```bash
+docker exec -it prefect python flow.py
+```
+
+### Bước 3.3: Theo dõi qua giao diện Web
+
+Truy cập: http://localhost:4200 để xem biểu đồ và log xử lý trực quan.
+
+---
+
+## 🛠️ 4) Chạy thủ công (Dành cho Debug/Kiểm tra lẻ)
 
 ### Bước 3 - Vào Bash
 
@@ -100,14 +127,14 @@ spark-submit /app/src/03_gld/gld_sales_report.py
 spark-submit /app/src/03_gld/gld_delivery_perf.py
 ```
 
-## 4) Truy cập UI
+## 5) Truy cập UI
 
 - HDFS NameNode: http://localhost:9870
 - YARN: http://localhost:8089
 - Superset: http://localhost:8080
 - Spark Thrift Server: `master:10001`
 
-## 5) Kết nối Superset
+## 6) Kết nối Superset
 
 ### 5.1 Khởi tạo Superset lần đầu (bắt buộc)
 
@@ -149,7 +176,7 @@ docker exec -it master bash -lc "beeline -u 'jdbc:hive2://master:10001/default' 
 
 Sau đó vào **Data → Datasets → + Dataset**, chọn các bảng Gold để vẽ chart/dashboard.
 
-## 6) Lỗi thường gặp
+## 7) Lỗi thường gặp
 
 ### `Name node is in safe mode`
 
