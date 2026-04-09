@@ -1,37 +1,38 @@
-# Python
+# ==========================================
+# 1. PYTHON (CÁC FILE RÁC KHI CHẠY CODE)
+# ==========================================
 __pycache__/
 *.py[cod]
+*$py.class
 *.egg-info/
+.pytest_cache/
 
-# Spark/Hadoop temp
+# ==========================================
+# 2. HADOOP / SPARK / HIVE (DỮ LIỆU TẠM)
+# ==========================================
 metastore_db/
 derby.log
 spark-warehouse/
-
-# IDE
-.vscode/
-.idea/
-
-# Data outputs in local tests
+.prefect/
+# Thư mục chứa kết quả chạy thử (Bronze/Silver/Gold) ở máy local
 lakehouse/
 
-# ignore everything
-*
-
-# allow important files/folders
-!.gitignore
-!docker-compose.yml
-!src/
-!src/**
-
-# macOS
-.DS_Store
-
-# big files
+# ==========================================
+# 3. FILE NẶNG / BỘ CÀI (KHÔNG ĐƯỢC PUSH!)
+# ==========================================
+# Chặn các file nén bộ cài Hadoop, Spark, Hive
 *.tar.gz
 *.tgz
+*.zip
 
-# spark/hadoop stuff
-spark-*
-hadoop-*
-apache-hive-*
+# Chặn các thư mục giải nén của Hadoop/Spark nếu lỡ để ở ngoài
+hadoop-*/
+spark-*/
+apache-hive-*/
+
+# ==========================================
+# 4. CÔNG CỤ / IDE
+# ==========================================
+.vscode/
+.idea/
+.DS_Store
