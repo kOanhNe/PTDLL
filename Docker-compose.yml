@@ -40,7 +40,7 @@ services:
     restart: always
 
   # ======================
-  # SUPERSET (Vẽ biểu đồ Dashboard)
+  # SUPERSET (AUTO INIT - FIX CHUẨN)
   # ======================
   superset:
     image: apache/superset:latest
@@ -57,13 +57,23 @@ services:
     restart: always
     entrypoint: >
       sh -c "
+        echo 'Installing dependencies...' &&
         /app/.venv/bin/python -m ensurepip --upgrade &&
         /app/.venv/bin/python -m pip install --no-cache-dir pyhive thrift thrift_sasl pure-sasl &&
+        echo 'Waiting for Superset...' &&
+        sleep 20 &&
+        echo 'Upgrading DB...' &&
+        superset db upgrade &&
+        echo 'Creating admin user...' &&
+        superset fab create-admin --username admin --firstname Admin --lastname User --email admin@local.com --password admin || true &&
+        echo 'Initializing Superset...' &&
+        superset init &&
+        echo 'Starting Superset...' &&
         /usr/bin/run-server.sh
       "
 
   # ======================
-  # PREFECT (BỘ ĐIỀU PHỐI CHUẨN KIẾN TRÚC)
+  # PREFECT (ỔN ĐỊNH API)
   # ======================
   prefect:
     image: prefecthq/prefect:2-python3.10
@@ -81,13 +91,18 @@ services:
       - hadoop_net
     depends_on:
       - master
+      - superset
     tty: true
     stdin_open: true
     restart: always
     command: >
       bash -c "
         pip install --no-cache-dir paramiko pyhive thrift &&
-        prefect server start --host 0.0.0.0 --port 4200
+        echo 'Starting Prefect server...' &&
+        prefect server start --host 0.0.0.0 --port 4200 &
+        sleep 10 &&
+        echo 'Prefect is ready!' &&
+        tail -f /dev/null
       "
 
 networks:
