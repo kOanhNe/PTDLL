@@ -2,6 +2,17 @@
 
 Project ETL Lakehouse chạy trên Hadoop + Spark + Hive + Superset.
 
+# Script dành cho máy mới clone về chạy demo
+
+# 1
+```bash
+docker compose up -d --build
+```
+# 2
+```bash
+docker exec -it prefect python flow.py
+```
+# HƯỚNG DẪN CHO CÁC THÀNH VIÊN
 # Nếu buil lại image nhiều:
 ```bash
 docker builder prune -a -f
@@ -51,7 +62,7 @@ docker build --no-cache -f docker/Dockerfile -t nhom17 .
 ### Bước 2 - Khởi động cluster
 
 ```bash
-docker compose down
+docker compose down (không cần chạy nếu mới clone về)
 docker compose up -d
 ```
 
@@ -59,21 +70,15 @@ docker compose up -d
 
 Thay vì chạy tay từng bước từ Bước 3 đến Bước 8, hệ thống đã tích hợp Prefect Orchestrator để tự động hóa toàn bộ quy trình qua Network (SSH).
 
-### Bước 3.1: Cài đặt thư viện cho Prefect (Chỉ làm lần đầu)
+### Bước 3.1: Thực thi toàn bộ Pipeline (End-to-End)
 
-```bash
-docker exec -u root prefect pip install paramiko pyhive thrift
-```
-
-### Bước 3.2: Thực thi toàn bộ Pipeline (End-to-End)
-
-Lệnh này sẽ tự động tạo thư mục HDFS, nạp dữ liệu, và chạy lần lượt Bronze -> Silver -> Gold:
+Lệnh này sẽ tự động tạo thư mục HDFS, nạp dữ liệu, và chạy lần lượt Bronze -> Silver -> Gold -> Superset
 
 ```bash
 docker exec -it prefect python flow.py
 ```
 
-### Bước 3.3: Theo dõi qua giao diện Web
+### Bước 3.2: Theo dõi qua giao diện Web
 
 Truy cập: http://localhost:4200 để xem biểu đồ và log xử lý trực quan.
 
