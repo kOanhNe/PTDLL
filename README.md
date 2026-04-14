@@ -6,7 +6,7 @@ Project ETL Lakehouse chạy trên Hadoop + Spark + Hive + Superset.
 
 # 1
 ```bash
-docker compose up -d --build
+docker build -f docker/Dockerfile -t nhom17 . && docker compose -f Docker-compose.yml up -d
 ```
 # 2
 ```bash
