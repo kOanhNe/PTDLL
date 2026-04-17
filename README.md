@@ -171,7 +171,7 @@ Trong Superset:
 
 5. Bấm **Test Connection** → **Connect** (hoặc **Save**) khi pass.
 
-> Nếu vẫn lỗi auth, thử URI: `hive://master:10001/default?auth=NOSASL`
+> Nếu vẫn lỗi auth, thử URI: `hive://master:10001/default?auth=NONE`
 
 Kiểm tra nhanh bảng đã đăng ký trong Hive Metastore:
 
